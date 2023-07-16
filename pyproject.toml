@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simple_rule34_STARMAN12"
+version = "0.1"
+authors = [
+  { name="StarMan12", email="author@example.com" },
+]
+description = "Simple api wrapper of rule34.xxx for python with asynchronous support"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Loshok229/rule34-simple-api"
+"Bug Tracker" = "https://github.com/Loshok229/rule34-simple-api/issues"

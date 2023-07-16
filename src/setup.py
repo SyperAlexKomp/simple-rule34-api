@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='rule34-simple-api',
+    name='SimpleRule34',
     version='0.1',
     description='Simple api wrapper of rule34.xxx for python with asynchronous support',
     packages=find_packages(),

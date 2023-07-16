@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: simple-rule34-STARMAN12
-Version: 0.1
+Version: 0.1.1
 Summary: Simple api wrapper of rule34.xxx for python with asynchronous support
 Author-email: StarMan12 <author@example.com>
 Project-URL: Homepage, https://github.com/Loshok229/rule34-simple-api

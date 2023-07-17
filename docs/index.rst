@@ -8,7 +8,9 @@ Welcome to simple-rule34-api's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   install
+
 
 
 

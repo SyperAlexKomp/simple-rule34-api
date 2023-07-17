@@ -4,6 +4,8 @@
    contain the root `toctree` directive.
 
 Welcome to simple-rule34-api's documentation!
+
+Lumache has its documentation hosted on Read the Docs.
 =============================================
 
 .. toctree::

@@ -19,7 +19,7 @@ release = '0.1.3'
 
 import sphinx_rtd_theme
 
-extensions = ["sphinx_rtd_theme",]
+extensions = ["sphinx_rtd_theme", ]
 pygments_style = "sphinx"
 version = '0.1.0'
 html_theme = 'sphinx_rtd_theme'

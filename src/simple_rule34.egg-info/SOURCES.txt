@@ -13,4 +13,5 @@ src/SimpleRule34/aio/utils.py
 src/simple_rule34.egg-info/PKG-INFO
 src/simple_rule34.egg-info/SOURCES.txt
 src/simple_rule34.egg-info/dependency_links.txt
+src/simple_rule34.egg-info/requires.txt
 src/simple_rule34.egg-info/top_level.txt

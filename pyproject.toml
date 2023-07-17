@@ -19,7 +19,7 @@ requires = ['aiohttp==3.8.4',
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "simple_rule34_STARMAN12"
+name = "simple_rule34"
 version = "0.1.1"
 authors = [
   { name="StarMan12", email="author@example.com" },

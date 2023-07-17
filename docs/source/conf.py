@@ -1,3 +1,6 @@
+
+
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -9,19 +12,21 @@
 project = 'simple-rule34-api'
 copyright = '2023, StarMan12'
 author = 'StarMan12'
+release = '0.1.3'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+import sphinx_rtd_theme
+
+extensions = ["sphinx_rtd_theme"]
+pygments_style = "sphinx"
+version = '0.1.0'
+html_theme = 'sphinx_rtd_theme'
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-
+exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-html_theme = 'alabaster'
 html_static_path = ['_static']

@@ -1,5 +1,6 @@
 import random
 import time
+import typing
 
 import requests
 import datetime
@@ -11,10 +12,26 @@ from .types import Rule34MainPost, Rule34PostData, Rule34SamplePost, Rule34Previ
 
 
 class Rule34Api:
+    """
+    Sync main api class
+
+    """
+
     def __init__(self):
         self.s = requests.Session()
 
     def get_post_count(self, tags: str = '') -> int:
+        """
+        This function will search amount of posts with your tags from rule34.xxx
+
+        :param tags: Tags in format 'tag1 tag2 ...'. Base ''
+        :type tags: str
+
+        :return: Amount of posts with current tags
+        :rtype: int
+        """
+
+
         r = self.s.get(f'https://api.rule34.xxx/index.php?'
                        f'page=dapi&s=post&q=index&tags={tags}')
 
@@ -22,7 +39,17 @@ class Rule34Api:
 
         return int(xml_root.get('count'))
 
-    def get_post(self, id: int):
+    def get_post(self, id: int) -> typing.Optional[Rule34PostData]:
+        """
+        This function will search post with your id from rule34.xxx
+
+        :param id: id of post
+        :type id: int
+
+        :return: On success, returns Rule34PostData object
+        :rtype: :obj: 'typing.Optional[Rule34PostData]'
+        """
+
         r = self.s.get(f'https://api.rule34.xxx/index.php?'
                        f'page=dapi&s=post&q=index&id={id}')
 
@@ -65,7 +92,17 @@ class Rule34Api:
 
         return Rule34PostData(id, main_post, sample_post, preview_post)
 
-    def get_random_post(self, tags: str = ''):
+    def get_random_post(self, tags: str = '') -> typing.Optional[Rule34PostData]:
+        """
+        This function will search 1 random post with your tags from rule34.xxx
+
+        :param tags: Tags in format 'tag1 tag2 ...' with which post will be searching. Base ''
+        :type tags: str
+
+        :return: On success, returns Rule34PostData object
+        :rtype: :obj: 'typing.Optional[Rule34PostData]'
+        """
+
         post_count = self.get_post_count(tags)
 
         page_count = post_count // 1000
@@ -80,6 +117,20 @@ class Rule34Api:
         return post_list[random.randint(0, len(post_list) - 1)] if len(post_list) > 0 else None
 
     def get_random_posts(self, tags: str = '', count: int = 8) -> list[Rule34PostData]:
+        """
+        This function will search your amount of random posts with your tags from rule34.xxx
+
+        :param tags: Tags in format 'tag1 tag2 ...' with which post will be searching. Base ''
+        :type tags: str
+
+        :param count: Amount of posts that will need to be founded. Base 8
+        :type count: int
+
+        :return: List with founded posts
+        :rtype: :obj: 'list[Rule34PostData]'
+
+        """
+
         st = time.time()
 
         request_count = 1
@@ -100,6 +151,21 @@ class Rule34Api:
         return getted
 
     def get_post_list(self, limit: int = 1000, page_id: int = 0, tags: str = '') -> list[Rule34PostData]:
+        """
+        This function will get list of posts with your tags on page
+
+        :param limit: limit of posts in list. Base value is 1000
+        :type limit: int
+
+        :param page_id: number of page with posts. Base value is 0
+        :type page_id: int
+
+        :param tags: Tags in format 'tag1 tag2 ...' with which post will be searching. Base values is ''
+        :type tags: str
+
+        :return: :obj: 'list[Rule34PostData]'
+        """
+
         if limit > 1000:
             raise ToBigRequestException(f"The max size of request is 1000 when you tried to request {limit}")
 

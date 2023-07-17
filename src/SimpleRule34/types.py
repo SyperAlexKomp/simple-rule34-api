@@ -16,10 +16,12 @@ class Rule34Post:
         self.id = id
 
         self.file_type = get_file_type(self.url)
-        self.file_size = get_file_size(self.url, self.s)
 
     def __str__(self):
         return f"<Rule34Post(id={self.id}, height={self.height}, width={self.width}, url={self.url})>"
+
+    def get_file_size(self):
+        return get_file_size(self.url, self.s)
 
     def download(self, path = r'./rule34_download'):
         r = self.s.get(self.url)

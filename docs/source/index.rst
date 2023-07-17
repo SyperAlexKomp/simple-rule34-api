@@ -12,6 +12,8 @@ Lumache has its documentation hosted on Read the Docs.
    :maxdepth: 2
    :caption: Contents:
 
+   sdfdsfs
+
 
 
 Indices and tables

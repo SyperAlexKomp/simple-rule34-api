@@ -1,3 +1,4 @@
+
 async def get_file_size(url, session):
     async with session.head(url=url, allow_redirects=True) as response:
         if 'Content-Length' in response.headers:
@@ -17,3 +18,5 @@ def get_file_type(url):
         return 'animation'
     else:
         return None
+
+

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "simple_rule34"
-version = "0.1.3-b"
+version = "0.1.5.3"
 authors = [
   { name="StarMan12", email="author@example.com" },
 ]
@@ -21,7 +21,7 @@ dependencies = ['aiohttp==3.8.4',
     'alabaster==0.7.13',
     'async-timeout==4.0.2',
     'attrs==23.1.0',
-    'Babel==2.12.1',
+    'Babel==2.9.1',
     'build==0.10.0',
     'certifi==2023.5.7',
     'charset-normalizer==3.2.0',
@@ -57,5 +57,5 @@ dependencies = ['aiohttp==3.8.4',
     'zipp==3.16.2']
 
 [project.urls]
-"Homepage" = "https://github.com/Loshok229/rule34-simple-api"
-"Bug Tracker" = "https://github.com/Loshok229/rule34-simple-api/issues"
+"Homepage" = "https://github.com/SyperAlexKomp/simple-rule34-api"
+"Bug Tracker" = "https://github.com/SyperAlexKomp/simple-rule34-api/issues"

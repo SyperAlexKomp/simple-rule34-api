@@ -6,9 +6,9 @@ from .utils import get_file_type, get_file_size
 
 
 class Rule34Post:
-    def __init__(self, height: int, width: int, url: str, id: int, session: requests.Session):
+    def __init__(self, height: int, width: int, url: str, id: int):
         self.path = r'./rule34_download'
-        self.s = session
+        self.s = requests.Session()
 
         self.height = height
         self.width = width
@@ -49,8 +49,8 @@ class Rule34Post:
 class Rule34MainPost(Rule34Post):
     def __init__(self, score: int, rating: str, creator_id: int, tags: str, has_children: bool,
                  created_date: datetime.datetime, status: str, source: str, has_notes: bool, has_comments: bool,
-                 height: int, width: int, url: str, id: int, s):
-        super().__init__(height, width, url, id, s)
+                 height: int, width: int, url: str, id: int):
+        super().__init__(height, width, url, id)
         self.score = score
         self.rating = rating
         self.creator_id = creator_id

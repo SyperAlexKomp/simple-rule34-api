@@ -11,6 +11,43 @@ from .exceptions import *
 from .types import Rule34MainPost, Rule34PostData, Rule34SamplePost, Rule34PreviewPost
 
 
+def parse_result(post_element):
+
+
+    id = int(post_element.get('id'))
+    height = int(post_element.get('height'))
+    width = int(post_element.get('width'))
+    url = post_element.get('file_url')
+
+    sample_height = int(post_element.get('sample_height'))
+    sample_width = int(post_element.get('sample_width'))
+    sample_url = post_element.get('sample_url')
+
+    sample_post = Rule34SamplePost(sample_height, sample_width, sample_url, id)
+
+    preview_height = int(post_element.get('preview_height'))
+    preview_width = int(post_element.get('preview_width'))
+    preview_url = post_element.get('preview_url')
+
+    preview_post = Rule34PreviewPost(preview_height, preview_width, preview_url, id)
+
+    score = int(post_element.get('score'))
+    rating = post_element.get('rating')
+    creator_id = int(post_element.get('creator_id'))
+    tags = post_element.get('tags')
+    has_children = post_element.get('has_children') == 'true'
+    created_date = datetime.datetime.strptime(post_element.get('created_at'), "%a %b %d %H:%M:%S %z %Y")
+    status = post_element.get('status')
+    source = post_element.get('source')
+    has_notes = post_element.get('has_notes') == 'true'
+    has_comments = post_element.get('has_comments') == 'true'
+
+    main_post = Rule34MainPost(score, rating, creator_id, tags, has_children, created_date, status,
+                               source, has_notes, has_comments, height, width, url, id)
+
+    return main_post, sample_post, preview_post
+
+
 class Rule34Api:
     """
     Sync main api class
@@ -59,36 +96,12 @@ class Rule34Api:
             return None
         post_element = xml_root.find('post')
 
-        id = int(post_element.get('id'))
-        height = int(post_element.get('height'))
-        width = int(post_element.get('width'))
-        url = post_element.get('file_url')
+        parsed = parse_result(post_element)
 
-        sample_height = int(post_element.get('sample_height'))
-        sample_width = int(post_element.get('sample_width'))
-        sample_url = post_element.get('sample_url')
-
-        sample_post = Rule34SamplePost(sample_height, sample_width, sample_url, id, self.s)
-
-        preview_height = int(post_element.get('preview_height'))
-        preview_width = int(post_element.get('preview_width'))
-        preview_url = post_element.get('preview_url')
-
-        preview_post = Rule34PreviewPost(preview_height, preview_width, preview_url, id, self.s)
-
-        score = int(post_element.get('score'))
-        rating = post_element.get('rating')
-        creator_id = int(post_element.get('creator_id'))
-        tags = post_element.get('tags')
-        has_children = post_element.get('has_children') == 'true'
-        created_date = datetime.datetime.strptime(post_element.get('created_at'), "%a %b %d %H:%M:%S %z %Y")
-        status = post_element.get('status')
-        source = post_element.get('source')
-        has_notes = post_element.get('has_notes') == 'true'
-        has_comments = post_element.get('has_comments') == 'true'
-
-        main_post = Rule34MainPost(score, rating, creator_id, tags, has_children, created_date, status,
-                                   source, has_notes, has_comments, height, width, url, id, self.s)
+        if parsed is None:
+            return None
+        else:
+            main_post, sample_post, preview_post = parsed
 
         return Rule34PostData(id, main_post, sample_post, preview_post)
 
@@ -150,7 +163,8 @@ class Rule34Api:
 
         return getted
 
-    def get_post_list(self, limit: int = 1000, page_id: int = 0, tags: str = '') -> list[Rule34PostData]:
+    def get_post_list(self, limit: int = 1000, page_id: int = 0, tags: str = '',
+                      blocked_tags: typing.Optional[str] = None) -> list[Rule34PostData]:
         """
         This function will get list of posts with your tags on page
 
@@ -162,6 +176,10 @@ class Rule34Api:
 
         :param tags: Tags in format 'tag1 tag2 ...' with which post will be searching. Base values is ''
         :type tags: str
+
+        :parameter blocked_tags: Tags that will be banned from search in format 'tag1 tag2 ...'. Base values is None.
+         Can slow search
+        :type blocked_tags: str or None
 
         :return: :obj: 'list[Rule34PostData]'
         """
@@ -182,44 +200,14 @@ class Rule34Api:
 
         start_time = time.time()
         for post_element in posts:
-            id = int(post_element.get('id'))
-            height = int(post_element.get('height'))
-            width = int(post_element.get('width'))
-            url = post_element.get('file_url')
+            parsed = parse_result(post_element)
 
-            sample_height = int(post_element.get('sample_height'))
-            sample_width = int(post_element.get('sample_width'))
-            sample_url = post_element.get('sample_url')
+            if parsed is None:
+                continue
+            else:
+                main_post, sample_post, preview_post = parsed
 
-            sample_post = Rule34SamplePost(sample_height, sample_width, sample_url, id, self.s)
-
-            preview_height = int(post_element.get('preview_height'))
-            preview_width = int(post_element.get('preview_width'))
-            preview_url = post_element.get('preview_url')
-
-            preview_post = Rule34PreviewPost(preview_height, preview_width, preview_url, id, self.s)
-
-            score = int(post_element.get('score'))
-            rating = post_element.get('rating')
-            creator_id = int(post_element.get('creator_id'))
-            tags = post_element.get('tags')
-            has_children = post_element.get('has_children') == 'true'
-            created_date = datetime.datetime.strptime(post_element.get('created_at'), "%a %b %d %H:%M:%S %z %Y")
-            status = post_element.get('status')
-            source = post_element.get('source')
-            has_notes = post_element.get('has_notes') == 'true'
-            has_comments = post_element.get('has_comments') == 'true'
-
-            main_post = Rule34MainPost(score, rating, creator_id, tags, has_children, created_date, status,
-                                       source, has_notes, has_comments, height, width, url, id, self.s)
-
-            post_list.append(Rule34PostData(id, main_post, sample_post, preview_post))
+            post_list.append(Rule34PostData(main_post.id, main_post, sample_post, preview_post))
         logging.debug(f"Creating {len(posts)} objects where done in {time.time() - start_time}s")
+
         return post_list
-
-
-if __name__ == '__main__':
-    r34 = Rule34Api()
-
-    for pd in r34.get_post_list(tags='marinette_cheng', limit=30):
-        print(pd.main.download(path=r'C:\Users\alexk\PycharmProjects\Rule34Bot\test\data\marinette_cheng'))

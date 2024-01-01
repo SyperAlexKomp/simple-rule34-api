@@ -20,3 +20,16 @@ def get_file_type(url):
         return 'animation'
     else:
         return None
+
+
+def remove_blocked_tags_posts(post_list, blocked_tags):
+    post_list_ = []
+
+    for post in post_list:
+        if blocked_tags in post.main.tags:
+            pass
+        else:
+            post_list_.append(post)
+
+    return post
+

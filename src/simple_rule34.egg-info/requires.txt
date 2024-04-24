@@ -37,3 +37,5 @@ urllib3==2.0.3
 yarg==0.1.9
 yarl==1.9.2
 zipp==3.16.2
+aiofiles~=23.2.1
+pydantic~=2.7.1

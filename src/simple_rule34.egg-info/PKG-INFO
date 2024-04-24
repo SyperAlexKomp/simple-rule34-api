@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: simple_rule34
-Version: 0.1.5.3
+Version: 0.1.6
 Summary: Simple api wrapper of rule34.xxx for python with asynchronous support
 Author-email: StarMan12 <author@example.com>
 Project-URL: Homepage, https://github.com/SyperAlexKomp/simple-rule34-api
@@ -50,6 +50,8 @@ Requires-Dist: urllib3==2.0.3
 Requires-Dist: yarg==0.1.9
 Requires-Dist: yarl==1.9.2
 Requires-Dist: zipp==3.16.2
+Requires-Dist: aiofiles~=23.2.1
+Requires-Dist: pydantic~=2.7.1
 
 # rule34-simple-api
 Simple api wrapper of rule34.xxx for python with asynchronous support

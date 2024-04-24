@@ -1,213 +1,149 @@
 import random
 import time
-import typing
 
-import requests
+import aiohttp
 import datetime
 import logging
 import xml.etree.ElementTree as ET
 
 from .exceptions import *
-from .types import Rule34MainPost, Rule34PostData, Rule34SamplePost, Rule34PreviewPost
-
-
-def parse_result(post_element):
-
-
-    id = int(post_element.get('id'))
-    height = int(post_element.get('height'))
-    width = int(post_element.get('width'))
-    url = post_element.get('file_url')
-
-    sample_height = int(post_element.get('sample_height'))
-    sample_width = int(post_element.get('sample_width'))
-    sample_url = post_element.get('sample_url')
-
-    sample_post = Rule34SamplePost(sample_height, sample_width, sample_url, id)
-
-    preview_height = int(post_element.get('preview_height'))
-    preview_width = int(post_element.get('preview_width'))
-    preview_url = post_element.get('preview_url')
-
-    preview_post = Rule34PreviewPost(preview_height, preview_width, preview_url, id)
-
-    score = int(post_element.get('score'))
-    rating = post_element.get('rating')
-    creator_id = int(post_element.get('creator_id'))
-    tags = post_element.get('tags')
-    has_children = post_element.get('has_children') == 'true'
-    created_date = datetime.datetime.strptime(post_element.get('created_at'), "%a %b %d %H:%M:%S %z %Y")
-    status = post_element.get('status')
-    source = post_element.get('source')
-    has_notes = post_element.get('has_notes') == 'true'
-    has_comments = post_element.get('has_comments') == 'true'
-
-    main_post = Rule34MainPost(score, rating, creator_id, tags, has_children, created_date, status,
-                               source, has_notes, has_comments, height, width, url, id)
-
-    return main_post, sample_post, preview_post
+from .types import *
 
 
 class Rule34Api:
-    """
-    Sync main api class
-
-    """
-
     def __init__(self):
-        self.s = requests.Session()
+        self.header = {'User-Agent': 'rule34-simple-api 0.1.5.6 (Request)'}
+    async def get_post_count(self, tags: str = '') -> int:
+        async with aiohttp.ClientSession(headers=self.header) as session:
+            async with session.get(f'https://api.rule34.xxx/index.php?'
+                                   f'page=dapi&s=post&q=index&tags={tags}') as response:
+                xml_data = await response.text()
 
-    def get_post_count(self, tags: str = '') -> int:
-        """
-        This function will search amount of posts with your tags from rule34.xxx
-
-        :param tags: Tags in format 'tag1 tag2 ...'. Base ''
-        :type tags: str
-
-        :return: Amount of posts with current tags
-        :rtype: int
-        """
-
-
-        r = self.s.get(f'https://api.rule34.xxx/index.php?'
-                       f'page=dapi&s=post&q=index&tags={tags}')
-
-        xml_root = ET.fromstring(r.text)
+        xml_root = ET.fromstring(xml_data)
 
         return int(xml_root.get('count'))
 
-    def get_post(self, id: int) -> typing.Optional[Rule34PostData]:
-        """
-        This function will search post with your id from rule34.xxx
+    async def get_post(self, id: int) -> Post:
+        st = time.time()
 
-        :param id: id of post
-        :type id: int
+        async with aiohttp.ClientSession(headers=self.header) as session:
+            async with session.get(f'https://api.rule34.xxx/index.php?'
+                                   f'json=1&page=dapi&s=post&q=index&id={id}') as response:
+                if response.status != 200:
+                    raise ApiException(f"Api returned status code {response.status} with message"
+                                       f" {await response.text()}")
 
-        :return: On success, returns Rule34PostData object
-        :rtype: :obj: 'typing.Optional[Rule34PostData]'
-        """
+                j = await response.json()
+                data = j[0]
 
-        r = self.s.get(f'https://api.rule34.xxx/index.php?'
-                       f'page=dapi&s=post&q=index&id={id}')
+        data["main"] = {
+            "url": data['file_url']
+        }
+        data["preview"] = {
+            "url": data['preview_url']
+        }
+        data["tags"] = data["tags"].split(" ")
 
-        try:
-            xml_root = ET.fromstring(r.text)
-        except:
-            return None
-        post_element = xml_root.find('post')
+        logging.debug(f"Post[{id}] where found in {time.time() - st}s")
 
-        parsed = parse_result(post_element)
+        return Post(**data)
 
-        if parsed is None:
-            return None
-        else:
-            main_post, sample_post, preview_post = parsed
+    async def get_random_post(self, tags: str = '', forbidden_tags: list[str] = []) -> Post:
+        start_time = time.time()
 
-        return Rule34PostData(id, main_post, sample_post, preview_post)
-
-    def get_random_post(self, tags: str = '') -> typing.Optional[Rule34PostData]:
-        """
-        This function will search 1 random post with your tags from rule34.xxx
-
-        :param tags: Tags in format 'tag1 tag2 ...' with which post will be searching. Base ''
-        :type tags: str
-
-        :return: On success, returns Rule34PostData object
-        :rtype: :obj: 'typing.Optional[Rule34PostData]'
-        """
-
-        post_count = self.get_post_count(tags)
+        post_count = await self.get_post_count(tags)
 
         page_count = post_count // 1000
 
         if page_count > 0:
-            post_list = self.get_post_list(page_id=random.randint(0, page_count if page_count <= 200 else 200),
-                                           tags=tags, limit=1000)
+            post_list = await self.get_post_list(page_id=random.randint(0, page_count if page_count <= 200 else 200),
+                                                 tags=tags, limit=1000)
 
         else:
-            post_list = self.get_post_list(tags=tags, limit=1000)
+            post_list = await self.get_post_list(tags=tags, limit=1000)
 
-        return post_list[random.randint(0, len(post_list) - 1)] if len(post_list) > 0 else None
+        post_list_ = []
 
-    def get_random_posts(self, tags: str = '', count: int = 8) -> list[Rule34PostData]:
-        """
-        This function will search your amount of random posts with your tags from rule34.xxx
+        for post in post_list:
+            if any(tag in forbidden_tags for tag in post.main.tags):
+                pass
+            else:
+                post_list_.append(post)
 
-        :param tags: Tags in format 'tag1 tag2 ...' with which post will be searching. Base ''
-        :type tags: str
+        logging.debug(f"Random posts where found in {time.time() - start_time}s")
 
-        :param count: Amount of posts that will need to be founded. Base 8
-        :type count: int
+        return post_list_[random.randint(0, len(post_list_) - 1)] if len(post_list_) > 0 else None
 
-        :return: List with founded posts
-        :rtype: :obj: 'list[Rule34PostData]'
-
-        """
-
+    async def get_random_posts(self, tags: str = '', count: int = 8, forbidden_tags: list[str] = []) -> list[Post]:
         st = time.time()
 
         request_count = 1
+        true_count = count*20
 
         post_list = []
 
-        if count > 1000:
-            request_count = count // 1000
+        if true_count > 1000:
+            request_count = true_count // 1000
+
+        post_count = await self.get_post_count(tags)
+        page_id = int(random.randint(0, int(post_count / true_count)) / 8)  if post_count >= true_count else 0
 
         for pid in range(request_count + 1):
-            post_list += self.get_post_list(tags=tags)
+            post_list += await self.get_post_list(tags=tags, forbidden_tags=forbidden_tags,
+                                                  page_id=page_id, limit=true_count if true_count <= 1000 else 1000)
 
-        getted = [post_list[random.randint(0, len(post_list) - 1)] if len(post_list) > 0 else None for x in
-                  range(count)]
+        getted = []
 
-        logging.debug(f"{count} random posts where founded in {time.time() - st}")
+        for x in range(count):
+            if len(post_list) > 0:
+                getted.append(post_list[random.randint(0, len(post_list) - 1)])
+            else:
+                pass
+
+        logging.debug(f"{count} random posts where found in {time.time() - st}s")
 
         return getted
 
-    def get_post_list(self, limit: int = 1000, page_id: int = 0, tags: str = '',
-                      blocked_tags: typing.Optional[str] = None) -> list[Rule34PostData]:
-        """
-        This function will get list of posts with your tags on page
-
-        :param limit: limit of posts in list. Base value is 1000
-        :type limit: int
-
-        :param page_id: number of page with posts. Base value is 0
-        :type page_id: int
-
-        :param tags: Tags in format 'tag1 tag2 ...' with which post will be searching. Base values is ''
-        :type tags: str
-
-        :parameter blocked_tags: Tags that will be banned from search in format 'tag1 tag2 ...'. Base values is None.
-         Can slow search
-        :type blocked_tags: str or None
-
-        :return: :obj: 'list[Rule34PostData]'
-        """
-
+    async def get_post_list(self, limit: int = 1000, page_id: int = 0, tags: str = '', forbidden_tags: list[str] = [])\
+            -> list[Post]:
         if limit > 1000:
             raise ToBigRequestException(f"The max size of request is 1000 when you tried to request {limit}")
 
-        start_time = time.time()
+        async with aiohttp.ClientSession(headers=self.header) as session:
+            start_time = time.time()
 
-        r = self.s.get(f'https://api.rule34.xxx/index.php?'
-                       f'page=dapi&s=post&q=index&limit={limit}&pid={page_id}&tags={tags}')
+            async with session.get(f'https://api.rule34.xxx/index.php?'
+                                   f'json=1&page=dapi&s=post&q=index&limit={limit}&pid={page_id}&tags={tags}') as response:
+                if response.status != 200:
+                    raise ApiException(f"Api returned status code {response.status} with message"
+                                       f" {await response.text()}")
 
-        logging.debug(f"Request with {limit}limit posts where done in {time.time() - start_time}s")
+                data = await response.json()
 
-        xml_root = ET.fromstring(r.text)
-        posts = xml_root.findall('post')
-        post_list = []
+            logging.debug(f"Request with {limit} limit posts were done in {time.time() - start_time}s")
 
-        start_time = time.time()
-        for post_element in posts:
-            parsed = parse_result(post_element)
+            post_list = []
+            for post_data in data:
+                post_data["main"] = {
+                    "url": post_data['file_url']
+                }
+                post_data["preview"] = {
+                    "url": post_data['preview_url']
+                }
+                post_data["tags"] = post_data["tags"].split(" ")
 
-            if parsed is None:
-                continue
-            else:
-                main_post, sample_post, preview_post = parsed
+                post_list.append(Post(**post_data))
 
-            post_list.append(Rule34PostData(main_post.id, main_post, sample_post, preview_post))
-        logging.debug(f"Creating {len(posts)} objects where done in {time.time() - start_time}s")
+            start_time = time.time()
 
-        return post_list
+            post_list_ = []
+
+            for post in post_list:
+                if any(tag in forbidden_tags for tag in post.tags):
+                    pass
+                else:
+                    post_list_.append(post)
+
+            logging.debug(f"{len(post_list_)} posts where found in {time.time() - start_time}s")
+
+            return post_list_
